@@ -98,6 +98,16 @@ A running reference of concepts as we build the project. Updated as we go — ch
 - **Technical:** `series.map(lookup)` where `lookup` is typically another Series (e.g. the output of `.value_counts()`) — matches each value to its corresponding entry.
 - **Titanic:** `df["Ticket"].map(df["Ticket"].value_counts())` — gives each row the total count of passengers sharing its exact ticket number, without a groupby.
 
+## pd.concat()
+- Intuition: stack two DataFrames (or columns) on top of each other into one combined set.
+- Technical: pd.concat([series1, series2]) combines rows from multiple objects into one, preserving all values from both.
+- Titanic: combined Ticket values from train.csv and test.csv before counting group sizes, so families split across both files (like the Sage family) get an accurate group size instead of being undercounted.
+
+## Data leakage boundary (what's actually forbidden)
+- Intuition: not all use of test.csv is leakage — only using its Survived values (or anything derived from knowing them) is a problem, since that's the one thing genuinely unavailable at real prediction time.
+- Technical: structural information (like Ticket, Pclass, Name) is legitimately available in both train and test sets simultaneously in real life — combining it across files is safe. Combining or deriving anything from the target column across the train/test boundary is not.
+- Titanic: combining Ticket columns from both files to fix TicketGroupSize was safe, since test.csv has no Survived column at all to leak in the first place.
+
 ---
 
 *(This glossary will grow as we introduce new concepts — preprocessing, validation, overfitting, etc.)*

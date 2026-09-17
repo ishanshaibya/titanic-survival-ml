@@ -88,3 +88,9 @@ Cleaned-up conclusions from exploring `train.csv` (891 rows). This is the "what 
 
 ## Working hypothesis heading into Stage 4
 Sex and Pclass appear strongest (largest effect sizes + most robust sample sizes). Title, HasCabin, and FamilySize are promising engineered candidates. Embarked is likely partly redundant with Sex/Pclass. This is our own manual, one-at-a-time analysis — not yet confirmed by an actual model, which may reveal redundancies or interactions this approach can't.
+
+## TicketGroupSize (engineered: shared Ticket count, combining train+test)
+- Built by counting how many passengers share each exact Ticket value, using pd.concat to combine Ticket columns from train.csv and test.csv before counting (test.csv's Survived is never used — only Ticket — so this does not leak target information).
+- Disagrees with FamilySize on 32.3% of rows — a real, meaningful difference, not noise.
+- Confirmed real non-family travel groups exist: Chip/Lam/Ling/Bing/Lang/Foo all show FamilySize=1 (no SibSp/Parch) but share Ticket 1601, TicketGroupSize=7 — clearly traveling together without being blood relatives.
+- Confirmed a real limitation of computing this from train.csv alone: the Sage family (FamilySize=11 for all members) only had 7 rows in train.csv, showing TicketGroupSize=7 until combined with test.csv, where the remaining 4 Sage family members were found — corrected count matches FamilySize (11) exactly once combined.
