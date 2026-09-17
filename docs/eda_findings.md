@@ -80,5 +80,11 @@ Cleaned-up conclusions from exploring `train.csv` (891 rows). This is the "what 
 - Conclusion: adding Age, Fare, HasCabin, and Embarked did **not** meaningfully improve accuracy — the 13-feature mean is actually very slightly lower, and its spread across runs is wider, not tighter. A 0.11-point difference in means is not a real result given this much run-to-run noise.
 - Possible explanations (not yet tested): the new features may be too redundant with IsFemale/Pclass/Title to add independent signal; logistic regression's linear weights can't capture non-straight-line patterns we found by hand (e.g. FamilySize's rise-then-collapse shape); or more features without more independent information can slightly increase noise. Open question for Stage 7/8, not resolved here.
 
+## Title_Mr and IsFemale — a redundancy we hadn't noticed
+- Checked gender breakdown per Title bucket directly: Mr = 517 male/0 female, Mrs = 0/125, Miss = 0/182, Master = 40 male/0 female, Rare = 20 male/7 female.
+- So `Title_Mr` is a near-perfect stand-in for "adult male with the ordinary title" — but not identical to `IsFemale=False`, since 40 (Master) + 20 (Rare male) = 60 real males are NOT captured by Title_Mr.
+- This redundancy is *why* a Decision Tree completely ignored IsFemale (importance 0.000) once it had split on Title_Mr — the two overlap so heavily that after using one, the other added nothing further for a single tree. Logistic regression doesn't have this problem the same way, since it assigns every feature its own weight regardless of overlap.
+- Practical note: from here on, model-level findings (accuracy, feature importance) are tracked in `experiment_log.md`, not duplicated here — this file stays focused on data/column-level findings.
+
 ## Working hypothesis heading into Stage 4
 Sex and Pclass appear strongest (largest effect sizes + most robust sample sizes). Title, HasCabin, and FamilySize are promising engineered candidates. Embarked is likely partly redundant with Sex/Pclass. This is our own manual, one-at-a-time analysis — not yet confirmed by an actual model, which may reveal redundancies or interactions this approach can't.

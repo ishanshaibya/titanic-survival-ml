@@ -68,6 +68,36 @@ A running reference of concepts as we build the project. Updated as we go — ch
 - **Technical:** constructing a new feature from existing ones, based on a reasoned hypothesis about what might matter, then testing it against the target.
 - **Titanic:** `FamilySize = SibSp + Parch + 1` (the `+1` accounts for the passenger themselves, since neither SibSp nor Parch count the passenger). Revealed a rise-then-collapse pattern in survival rate: alone (30.4%) < small families of 2–4 (55–72%) > large families of 5+ (mostly crashing, though based on small, noisy samples).
 
+## Overfitting vs. Underfitting (concrete version, via Decision Tree depth)
+- **Intuition:** underfitting is a model too simple to capture even the real pattern; overfitting is a model so flexible it starts memorizing noise/coincidences specific to the training data, which then hurts it on new data.
+- **Technical:** as model complexity increases (e.g. Decision Tree `max_depth`), training performance keeps improving, but validation performance rises then falls — the peak is the sweet spot; before it is underfitting, after it is overfitting.
+- **Titanic:** swept `max_depth` ∈ {2,3,4,5,6,8}. Validation accuracy rose from depth 2 (79.2%) to a peak at depth 3-4 (~81.9%), then declined at depth 5+ (down to ~80.0%) — a clean, real example of this exact curve, not just a theoretical shape.
+
+## Decision Tree
+- **Intuition:** instead of computing one weighted sum like logistic regression, a tree asks a sequence of yes/no questions about the data, splitting passengers into smaller groups at each step, ending in a prediction.
+- **Technical:** recursively splits training data on feature values, choosing splits that best separate the classes, forming a tree of if/else conditions. `max_depth` limits how many nested splits are allowed (controls overfitting).
+- **Titanic:** even at its best depth, underperformed logistic regression (81.90% vs ~83.4%). Checking `feature_importances_` revealed why: the tree relied almost entirely on `Title_Mr` (0.637) and never used `IsFemale` (0.000) at all — once it split on Title_Mr, IsFemale had nothing left to add, since the two are highly redundant.
+
+## Random Forest (Ensemble)
+- **Intuition:** build many different decision trees, each seeing a random subset of the data and features, then average their predictions — so no single feature can dominate every tree the way it dominated one single tree.
+- **Technical:** an ensemble method; `n_estimators` = number of trees, each trained on a bootstrap sample with a random feature subset per split. Reduces overfitting risk that a single tree has, generally with lower variance for a given depth (though not always — see below).
+- **Titanic:** confirmed the hypothesis partially — `IsFemale`'s importance jumped from 0.000 (single tree) to 0.220 (forest), since many trees didn't have Title_Mr available and used IsFemale instead. Best mean accuracy (84.25%, depth=5/200 trees) was *not* reliably better than logistic regression once its own run-to-run noise (stdev ±2.45, the widest of any model tried) was accounted for.
+
+## Feature Importance
+- **Intuition:** after training a tree-based model, you can ask it "how much did each feature actually matter to your decisions" — not a guess, a direct readout of the trained model.
+- **Technical:** `.feature_importances_` on a fitted tree/forest gives a score per feature, roughly proportional to how much it reduced prediction error across all splits.
+- **Titanic:** used to discover the Title_Mr / IsFemale redundancy in a single tree, and to confirm Random Forest partially fixes it. Caution: only meaningful for the *specific* trained model checked — always confirm which hyperparameters that exact model object actually has (e.g. `model.max_depth`) before trusting its importances, since a leftover object from a loop may not be the one you think it is.
+
+## `statistics` module (mean, stdev on plain lists)
+- **Intuition:** a built-in Python toolkit for basic stats on a plain list of numbers — no Pandas needed.
+- **Technical:** `import statistics as st`; `st.mean(list)`, `st.stdev(list)` (sample standard deviation), plus built-in `min()`/`max()` (no import needed).
+- **Titanic:** used to summarize accuracy scores collected across multiple random_state loops, instead of manually computing mean/stdev by hand each time.
+
+## `.map()` (Series lookup)
+- **Intuition:** for every row, look up a value in a separate small table and write the result into a new column.
+- **Technical:** `series.map(lookup)` where `lookup` is typically another Series (e.g. the output of `.value_counts()`) — matches each value to its corresponding entry.
+- **Titanic:** `df["Ticket"].map(df["Ticket"].value_counts())` — gives each row the total count of passengers sharing its exact ticket number, without a groupby.
+
 ---
 
 *(This glossary will grow as we introduce new concepts — preprocessing, validation, overfitting, etc.)*
