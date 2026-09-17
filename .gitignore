@@ -1,0 +1,13 @@
+# Data
+data/raw/
+data/processed/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
