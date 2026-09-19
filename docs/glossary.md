@@ -108,6 +108,11 @@ A running reference of concepts as we build the project. Updated as we go — ch
 - Technical: structural information (like Ticket, Pclass, Name) is legitimately available in both train and test sets simultaneously in real life — combining it across files is safe. Combining or deriving anything from the target column across the train/test boundary is not.
 - Titanic: combining Ticket columns from both files to fix TicketGroupSize was safe, since test.csv has no Survived column at all to leak in the first place.
 
+## Shuffling in cross-validation (why cv=5 alone isn't enough)
+- Intuition: k-fold cross-validation slices data into folds in whatever order it's already in — if that order isn't random (e.g. sorted by PassengerId/booking order), the folds themselves can end up unevenly mixed, inflating measured variance.
+- Technical: sklearn's default (Stratified)KFold from an integer cv is instantiated with shuffle=False. Passing an explicit `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)` shuffles once before slicing into folds, rather than using the data's original row order.
+- Titanic: unshuffled cross_val_score gave Logistic Regression a higher-std, lower-mean result (82.94%/±2.63) than the same model with explicit shuffling (83.16%/±1.44) — confirmed the row order itself was adding measurement noise, not the model being genuinely less stable.
+
 ---
 
 *(This glossary will grow as we introduce new concepts — preprocessing, validation, overfitting, etc.)*
