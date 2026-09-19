@@ -121,6 +121,11 @@ A running reference of concepts as we build the project. Updated as we go — ch
 ## Model comparison — final verdict (Stage 7)
 Random Forest (n_estimators=100, max_depth=8) confirmed as best model across 5 types, using shuffled StratifiedKFold cross-validation: 84.40% mean, ±0.92 std — the only model with both a clearly higher mean and a tighter std than the rest. See experiment_log.md row 7 for full comparison table.
 
+## Hyperparameter (vs. Parameter)
+- Intuition: a parameter is something the model learns from data itself (e.g. logistic regression's weights). A hyperparameter is a setting you choose before training even starts, controlling how the model is allowed to learn.
+- Technical: hyperparameters are not fit by the training algorithm; they're set externally (by you, or by a search process) and typically tuned by trying several values and comparing validation performance.
+- Titanic: max_depth (trees/forest), n_estimators (forest), K (KNN), C and kernel (SVM) are all hyperparameters — every "sweep" loop run today was a hyperparameter search, trying different values to find which performs best on validation data.
+
 ---
 
 *(This glossary will grow as we introduce new concepts — preprocessing, validation, overfitting, etc.)*
