@@ -113,6 +113,14 @@ A running reference of concepts as we build the project. Updated as we go — ch
 - Technical: sklearn's default (Stratified)KFold from an integer cv is instantiated with shuffle=False. Passing an explicit `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)` shuffles once before slicing into folds, rather than using the data's original row order.
 - Titanic: unshuffled cross_val_score gave Logistic Regression a higher-std, lower-mean result (82.94%/±2.63) than the same model with explicit shuffling (83.16%/±1.44) — confirmed the row order itself was adding measurement noise, not the model being genuinely less stable.
 
+## SVM (Support Vector Machine)
+- Intuition: finds the dividing boundary between classes with the widest possible margin (buffer zone), not just any boundary that separates them.
+- Technical: maximizes margin = 2/||w||, with a C parameter controlling how much margin violations (misclassified/borderline points) are penalized — high C = stricter fit (overfit risk), low C = looser fit (underfit risk). kernel='rbf' allows curved, non-linear boundaries; kernel='linear' stays a straight line/plane. Needs scaled features, same reason as KNN (distance-based).
+- Titanic: best result (rbf, C=1) at 83.50% — competitive with Logistic Regression but did not beat Random Forest.
+
+## Model comparison — final verdict (Stage 7)
+Random Forest (n_estimators=100, max_depth=8) confirmed as best model across 5 types, using shuffled StratifiedKFold cross-validation: 84.40% mean, ±0.92 std — the only model with both a clearly higher mean and a tighter std than the rest. See experiment_log.md row 7 for full comparison table.
+
 ---
 
 *(This glossary will grow as we introduce new concepts — preprocessing, validation, overfitting, etc.)*
